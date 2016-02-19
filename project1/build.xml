@@ -47,6 +47,9 @@
 <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
 <property name="build.dir" value="build"/>
 <property name="src.dir" value="src"/>
+<property name="dist.dir" value="dist"/>
+<property name="lib.dir" value="lib"/>
+
 <target name="download-ivy" unless="skip.download">
 <mkdir dir="${ivy.jar.dir}"/>
 <!--
@@ -101,6 +104,7 @@ We are now ready to execute our simple program with its dependency on commons-la
 </classpath>
 </java>
 </target>
+
 <!--
  ================================= 
           target: generate-src
@@ -124,8 +128,26 @@ package example; import org.apache.commons.lang.WordUtils; public class Hello { 
 <delete includeemptydirs="true" quiet="true">
 <fileset dir="${src.dir}"/>
 <fileset dir="${build.dir}"/>
+<fileset dir="${dist.dir}"/>
+<fileset dir="${lib.dir}"/>
 </delete>
 </target>
+
+<!--
+================================= 
+          target: jar              
+================================= 
+-->
+<target name="jar" depends="go"> 
+<mkdir dir="${dist.dir}"/>
+<ivy:retrieve conf="build" pattern="${lib.dir}/[artifact](-[classifier]).[ext]"/>
+<jar destfile="${dist.dir}/app.jar" basedir="${build.dir}" >
+		<manifest>
+                <attribute name="Main-Class" value="example.Hello" />
+	    </manifest> 
+</jar>
+</target>
+
 <!--
  ================================= 
           target: clean-ivy              
