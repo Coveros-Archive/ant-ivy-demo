@@ -152,36 +152,6 @@ package example; import org.apache.commons.lang.WordUtils; public class Hello { 
 		</jar>
 	</target>
 
-
-<!--
-	================================= 
-    target: snapshot
-    Upload the jar created as a snapshot. The version number is determined by the version in releases
-    plus 1 and the current snapshot build number plus one. If there are no snapshots  at that version the build number is 0.               
-	================================= 
--->
-	<target name="snapshot" depends="jar">
-		<!-- Find the latest release version -->
-		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
-		<!-- Find the latest snapshot build number for this version series -->
-		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}" />
-		<echo>
-Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}
-		</echo>
-		<!-- Find the latest snapshot build number for this version series --> 
-		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT.jar" verbose="true" />
-		<!-- Set the ivy delivery options --> 
-		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" status="release" />
-		<!-- make the pom file so ivy can publish it to nexus -->
-		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT.pom" />
-		<!-- resolve dunamically sets the version -->
-		<ivy:resolve revision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" />
-		<!-- This publishes to the snapshot repo at the calculated version -->
-		<ivy:publish resolver="nexus-snapshots" revision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" overwrite="true" publishivy="false">
-			<artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
-		</ivy:publish>
-	</target>
-
 <!--
 	================================= 
     target: test
@@ -201,12 +171,120 @@ Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}
 
 <!--
 	================================= 
-    target: release
+    target: snapshot
+    Checks for branch and executes build            
+	================================= 
+-->	
+	<target name="snapshot" depends="snapshot-work,snapshot-error" />
+
+<!--
+	================================= 
+    target: snapshot-error
+    exit if no branch is specified            
+	================================= 
+-->	
+	<target name="snapshot-error" unless="branch.name" >
+		<fail message="There is no branch specified!!!! Refusing to build!!!!" />
+	</target>	
+<!--
+	================================= 
+    target: snapshot-work
     Upload the jar created as a snapshot. The version number is determined by the version in releases
     plus 1 and the current snapshot build number plus one. If there are no snapshots  at that version the build number is 0.               
 	================================= 
 -->
-	<target name="release" depends="jar">
+	<target name="snapshot-work" depends="jar" if="branch.name" >
+		<!-- Find the latest release version -->
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
+		<!-- Find the latest snapshot build number for this version series -->
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}" />
+		<echo>
+Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number} on branch ${branch.name}
+		</echo>
+		<!-- Find the latest snapshot build number for this version series --> 
+		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT.jar" verbose="true" />
+		<!-- Set the ivy delivery options --> 
+		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" status="release" />
+		<!-- make the pom file so ivy can publish it to nexus -->
+		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT.pom" />
+		<!-- resolve dunamically sets the version -->
+		<ivy:resolve revision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" />
+		<!-- This publishes to the snapshot repo at the calculated version -->
+		<ivy:publish resolver="nexus-snapshots" revision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" overwrite="true" publishivy="false">
+			<artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
+		</ivy:publish>
+	</target>
+
+<!--
+	================================= 
+    target: release-integration
+    Checks for branch and executes build            
+	================================= 
+-->	
+	<target name="release-integration" depends="release-integration-work,release-integration-error" />
+
+<!--
+	================================= 
+    target: release-integration-error
+    exit if no branch is specified            
+	================================= 
+-->	
+	<target name="release-integration-error" unless="branch.name" >
+		<fail message="There is no branch specified!!!! Refusing to build!!!!" />
+	</target>
+	
+<!--
+	================================= 
+    target: release-integration-work
+    Upload the jar created as a release. The version number is determined by the version in releases
+    plus 1 and the current snapshot build number plus one. If there are no snapshots  at that version the build number is 0.               
+	================================= 
+-->
+	<target name="release-integration-work" depends="jar" if="branch.name">
+		<!-- Find the latest release version -->
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
+		<echo>
+Making a release for ${ivy.module}-${ivy.new.revision} in branch ${branch.name}
+		</echo>
+		<!-- rename the jar appropriatly -->
+		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.jar" verbose="true" />
+		<!-- set the delivery patter -->
+		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}" status="release" />
+		<!-- create pom file for ant to upload -->
+		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.pom" />
+		<!-- set the artifact version and resolve libs -->
+		<ivy:resolve revision="${ivy.new.revision}" />
+		<!-- push to nexus -->
+		<ivy:publish resolver="nexus-integration-releases" revision="${ivy.new.revision}" overwrite="true" publishivy="false">
+			<artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
+		</ivy:publish>
+	</target>
+	
+<!--
+	================================= 
+    target: release
+    Checks for branch and executes build            
+	================================= 
+-->	
+	<target name="release" depends="release-work,release-error" />
+
+<!--
+	================================= 
+    target: release-error
+    exit if no branch is specified            
+	================================= 
+-->	
+	<target name="release-error" if="branch.name" >
+		<fail message="A branch specified when a release is requested." />
+	</target>	
+<!--
+	================================= 
+    target: release-work
+    Upload the jar created as a snapshot. The version number is determined by the version in releases
+    plus 1 and the current snapshot build number plus one. If there are no snapshots  at that version the build number is 0.               
+	================================= 
+-->
+	<target name="release-work" depends="jar" unless="branch.name">
 		<!-- Find the latest release version -->
 		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
 		<echo>

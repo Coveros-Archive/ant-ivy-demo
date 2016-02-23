@@ -3,15 +3,18 @@
     <credentials host="localhost" realm="Nexus Repository Manager" username="admin" passwd="admin123"/>
     <property name="nexus-public" value="http://localhost:8081/nexus/content/groups/public"/>
     <property name="nexus-releases" value="http://localhost:8081/nexus/content/repositories/releases"/>
+    <property name="nexus-integration-releases" value="http://localhost:8081/nexus/content/repositories/integration-releases"/>
     <property name="nexus-snapshots" value="http://localhost:8081/nexus/content/repositories/snapshots"/>
     <property name="buildnum-releases" value="http://localhost:81/releases"/>
+    <property name="buildnum-integration-releases" value="http://localhost:81/integration-releases"/>
     <property name="buildnum-snapshots" value="http://localhost:81/snapshots"/>
     <resolvers>
-      <ibiblio name="nexus" m2compatible="true" useMavenMetadata="false" root="${nexus-public}" />
-      <!-- <ibiblio name="nexus-snapshots" m2compatible="true" useMavenMetadata="false" root="${nexus-snapshots}" pattern="[organisation]/[module]/[revision]-SNAPSHOT/[artifact]-[revision]-SNAPSHOT.[ext]" /> -->
+     <ibiblio name="nexus" m2compatible="true" useMavenMetadata="false" root="${nexus-public}" />
      <ibiblio name="nexus-snapshots" m2compatible="true" useMavenMetadata="false" root="${nexus-snapshots}" pattern="[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"  checkmodified="true" changingPattern="*-SNAPSHOT" />
      <ibiblio name="nexus-releases" m2compatible="true" useMavenMetadata="false" root="${nexus-releases}"/>
+     <ibiblio name="nexus-integration-releases" m2compatible="true" useMavenMetadata="false" root="${nexus-integration-releases}"/>
      <ibiblio name="buildnum-releases" m2compatible="true" useMavenMetadata="false" root="${buildnum-releases}" />
+     <ibiblio name="buildnum-integration-releases" m2compatible="true" useMavenMetadata="false" root="${buildnum-integration-releases}" />
      <ibiblio name="buildnum-snapshots" m2compatible="true" useMavenMetadata="false" root="${buildnum-snapshots}" checkmodified="true" changingPattern="*-SNAPSHOT"/>
     </resolvers>
 </ivysettings>

@@ -1,5 +1,5 @@
 <ivy-module version="2.3">
-    <info organisation="org.apache" module="helloivy" />
+    <info organisation="org.apache" module="helloivy" revision="1.0.0.0" />
     <configurations>
         <conf name="build" description="binary jars"/>
         <conf name="default" />
