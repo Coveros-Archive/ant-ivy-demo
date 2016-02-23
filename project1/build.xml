@@ -163,9 +163,13 @@ package example; import org.apache.commons.lang.WordUtils; public class Hello { 
 		<echo>
 			${ivy.new.revision} :: ${ivy.organisation} :: ${ivy.module} :: ${ivy.revision} :: ${ivy.build.number} :: ${ivy.new.build.number}
 		</echo>
-		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}." />
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-integration-releases" prefix="ivyint" revision="${ivy.new.revision}." />
 		<echo>
-	  	 	${ivysnap.new.revision} :: ${ivysnap.organisation} :: ${ivysnap.module} :: ${ivysnap.revision} :: ${ivysnap.build.number} :: ${ivysnap.new.build.number} :: I woule make ${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT
+	  	 	${ivyint.new.revision} :: ${ivyint.organisation} :: ${ivyint.module} :: ${ivyint.revision} :: ${ivyint.build.number} :: ${ivyint.new.build.number} :: I woule make ${ivy.new.revision}.${ivyint.new.build.number} for branch ${branch.name}
+		</echo>
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}.${ivyint.new.build.number}." />
+		<echo>
+	  	 	${ivysnap.new.revision} :: ${ivysnap.organisation} :: ${ivysnap.module} :: ${ivysnap.revision} :: ${ivysnap.build.number} :: ${ivysnap.new.build.number} :: I woule make ${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT for branch ${branch.name}
 		</echo>
 	</target>
 
@@ -196,21 +200,23 @@ package example; import org.apache.commons.lang.WordUtils; public class Hello { 
 	<target name="snapshot-work" depends="jar" if="branch.name" >
 		<!-- Find the latest release version -->
 		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
+		<!-- Find the latest integration build number for this version series -->
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-integration-releases" prefix="ivyint" revision="${ivy.new.revision}." />
 		<!-- Find the latest snapshot build number for this version series -->
-		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}" />
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}.${ivyint.new.build.number}." />
 		<echo>
-Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number} on branch ${branch.name}
+Creating ${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT for branch ${branch.name}
 		</echo>
 		<!-- Find the latest snapshot build number for this version series --> 
-		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT.jar" verbose="true" />
+		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT.jar" verbose="true" />
 		<!-- Set the ivy delivery options --> 
-		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" status="release" />
+		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT" status="release" />
 		<!-- make the pom file so ivy can publish it to nexus -->
-		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT.pom" />
+		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT.pom" />
 		<!-- resolve dunamically sets the version -->
-		<ivy:resolve revision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" />
+		<ivy:resolve revision="${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT" />
 		<!-- This publishes to the snapshot repo at the calculated version -->
-		<ivy:publish resolver="nexus-snapshots" revision="${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT" overwrite="true" publishivy="false">
+		<ivy:publish resolver="nexus-snapshots" revision="${ivy.new.revision}.${ivyint.new.build.number}.${ivysnap.new.build.number}-SNAPSHOT" overwrite="true" publishivy="false">
 			<artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
 		</ivy:publish>
 	</target>
@@ -243,19 +249,21 @@ Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number} on branch
 	<target name="release-integration-work" depends="jar" if="branch.name">
 		<!-- Find the latest release version -->
 		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
+		<!-- Find the latest integration build number for this version series -->
+		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-integration-releases" prefix="ivyint" revision="${ivy.new.revision}" />
 		<echo>
 Making a release for ${ivy.module}-${ivy.new.revision} in branch ${branch.name}
 		</echo>
 		<!-- rename the jar appropriatly -->
-		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.jar" verbose="true" />
+		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivyint.new.build.number}.jar" verbose="true" />
 		<!-- set the delivery patter -->
-		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}" status="release" />
+		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}.${ivyint.new.build.number}" status="release" />
 		<!-- create pom file for ant to upload -->
-		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.pom" />
+		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.${ivyint.new.build.number}.pom" />
 		<!-- set the artifact version and resolve libs -->
-		<ivy:resolve revision="${ivy.new.revision}" />
+		<ivy:resolve revision="${ivy.new.revision}.${ivyint.new.build.number}" />
 		<!-- push to nexus -->
-		<ivy:publish resolver="nexus-integration-releases" revision="${ivy.new.revision}" overwrite="true" publishivy="false">
+		<ivy:publish resolver="nexus-integration-releases" organisation="org.apache" revision="${ivy.new.revision}.${ivyint.new.build.number}" overwrite="true" publishivy="false">
 			<artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
 		</ivy:publish>
 	</target>
