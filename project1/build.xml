@@ -182,16 +182,21 @@ Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}
 		</ivy:publish>
 	</target>
 
-
+<!--
+	================================= 
+    target: test
+    This is used for debugging               
+	================================= 
+-->
 	<target name="test">
 		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" default="0.0" />
 		<echo>
-	   ${ivy.new.revision} :: ${ivy.organisation} :: ${ivy.module} :: ${ivy.revision} :: ${ivy.build.number} :: ${ivy.new.build.number}
-	</echo>
+			${ivy.new.revision} :: ${ivy.organisation} :: ${ivy.module} :: ${ivy.revision} :: ${ivy.build.number} :: ${ivy.new.build.number}
+		</echo>
 		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-snapshots" prefix="ivysnap" revision="${ivy.new.revision}." />
 		<echo>
-	   ${ivysnap.new.revision} :: ${ivysnap.organisation} :: ${ivysnap.module} :: ${ivysnap.revision} :: ${ivysnap.build.number} :: ${ivysnap.new.build.number} :: I woule make ${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT
-	</echo>
+	  	 	${ivysnap.new.revision} :: ${ivysnap.organisation} :: ${ivysnap.module} :: ${ivysnap.revision} :: ${ivysnap.build.number} :: ${ivysnap.new.build.number} :: I woule make ${ivy.new.revision}.${ivysnap.new.build.number}-SNAPSHOT
+		</echo>
 	</target>
 
 <!--
@@ -202,14 +207,20 @@ Creating ${ivy.module}-${ivy.new.revision}.${ivysnap.new.build.number}
 	================================= 
 -->
 	<target name="release" depends="jar">
+		<!-- Find the latest release version -->
 		<ivy:buildnumber organisation="org.apache" module="helloivy" resolver="buildnum-releases" />
 		<echo>
-	   ${ivy.new.revision} :: ${ivy.organisation} :: ${ivy.module} :: ${ivy.revision} :: ${ivy.build.number} :: ${ivy.new.build.number}
-	</echo>
+Making a release for ${ivy.module}-${ivy.new.revision}
+		</echo>
+		<!-- rename the jar appropriatly -->
 		<move file="${dist.dir}/${ivy.module}.jar" toFile="${dist.dir}/${ivy.module}-${ivy.new.revision}.jar" verbose="true" />
+		<!-- set the delivery patter -->
 		<ivy:deliver deliverpattern="${dist.dir}/ivy.xml" pubrevision="${ivy.new.revision}" status="release" />
+		<!-- create pom file for ant to upload -->
 		<ivy:makepom ivyfile="${dist.dir}/ivy.xml" pomfile="${dist.dir}/${ivy.module}-${ivy.new.revision}.pom" />
+		<!-- set the artifact version and resolve libs -->
 		<ivy:resolve revision="${ivy.new.revision}" />
+		<!-- push to nexus -->
 		<ivy:publish resolver="nexus-releases" revision="${ivy.new.revision}" overwrite="true" publishivy="false">
 			<artifacts pattern="${dist.dir}/[artifact]-[revision].[ext]" />
 		</ivy:publish>
