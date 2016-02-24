@@ -1,5 +1,5 @@
 <ivysettings>
-  <settings defaultResolver="nexus"/>
+  <settings defaultResolver="nexus" defaultBranch="" latest="latest-compatible" />
     <credentials host="localhost" realm="Nexus Repository Manager" username="admin" passwd="admin123"/>
     <property name="nexus-public" value="http://localhost:8081/nexus/content/groups/public"/>
     <property name="nexus-releases" value="http://localhost:8081/nexus/content/repositories/releases"/>
@@ -10,11 +10,11 @@
     <property name="buildnum-snapshots" value="http://localhost:81/snapshots"/>
     <resolvers>
      <ibiblio name="nexus" m2compatible="true" useMavenMetadata="false" root="${nexus-public}" />
-     <ibiblio name="nexus-snapshots" m2compatible="true" useMavenMetadata="false" root="${nexus-snapshots}" pattern="[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"  checkmodified="true" changingPattern="*-SNAPSHOT" />
-     <ibiblio name="nexus-releases" m2compatible="true" useMavenMetadata="false" root="${nexus-releases}"/>
-     <ibiblio name="nexus-integration-releases" m2compatible="true" useMavenMetadata="false" root="${nexus-integration-releases}"/>
-     <ibiblio name="buildnum-releases" m2compatible="true" useMavenMetadata="false" root="${buildnum-releases}" />
-     <ibiblio name="buildnum-integration-releases" m2compatible="true" useMavenMetadata="false" root="${buildnum-integration-releases}" />
-     <ibiblio name="buildnum-snapshots" m2compatible="true" useMavenMetadata="false" root="${buildnum-snapshots}" checkmodified="true" changingPattern="*-SNAPSHOT"/>
+     <ibiblio name="nexus-snapshots" m2compatible="true" useMavenMetadata="false" root="${nexus-snapshots}" pattern="[organisation]/[module]/[branch]//[revision]/[artifact]-[revision].[ext]"  checkmodified="true" changingPattern="*-SNAPSHOT" />
+     <ibiblio name="nexus-releases" m2compatible="true" useMavenMetadata="false" root="${nexus-releases}" pattern="[organisation]/[module]/[branch]/[revision]/[artifact]-[revision].[ext]" />
+     <ibiblio name="nexus-integration-releases" m2compatible="true" useMavenMetadata="false" root="${nexus-integration-releases}" pattern="[organisation]/[module]/[branch]/[revision]/[artifact]-[revision].[ext]" />
+     <ibiblio name="buildnum-releases" m2compatible="true" useMavenMetadata="false" root="${buildnum-releases}" pattern="[organisation]/[module]/[branch]/[revision]/[artifact]-[revision].[ext]" />
+     <ibiblio name="buildnum-integration-releases" m2compatible="true" useMavenMetadata="false" root="${buildnum-integration-releases}" pattern="[organisation]/[module]/[branch]/[revision]/[artifact]-[revision].[ext]" />
+     <ibiblio name="buildnum-snapshots" m2compatible="true" useMavenMetadata="false" root="${buildnum-snapshots}" checkmodified="true" changingPattern="*-SNAPSHOT" pattern="[organisation]/[module]/[branch]/[revision]/[artifact]-[revision].[ext]" />
     </resolvers>
 </ivysettings>
